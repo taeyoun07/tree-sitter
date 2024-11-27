@@ -69,13 +69,14 @@ pub fn build_tables(
         &token_conflict_map,
         &keywords,
     );
+    populate_used_symbols(&mut parse_table, syntax_grammar, lexical_grammar);
     populate_non_reserved_keyword_actions(
         &mut parse_table,
         syntax_grammar,
         lexical_grammar,
         &keywords,
     );
-    populate_used_symbols(&mut parse_table, syntax_grammar, lexical_grammar);
+
     minimize_parse_table(
         &mut parse_table,
         syntax_grammar,
@@ -275,6 +276,13 @@ fn populate_non_reserved_keyword_actions(
                 continue;
             };
 
+            if keyword_successor_state_id == 1031 {
+                eprintln!(
+                    "doing non-reserved keyword for {}, from state {}",
+                    lexical_grammar.variables[token.index].name, state_id
+                );
+            }
+
             let word_token_successor_state = &parse_table.states[word_token_successor_state_id];
             let keyword_successor_state = &parse_table.states[keyword_successor_state_id];
 
@@ -308,9 +316,10 @@ fn populate_non_reserved_keyword_actions(
     for (state_id, tokens) in lookaheads_to_populate {
         let state = &mut parse_table.states[state_id];
         for token in tokens.iter() {
-            state.terminal_entries.insert(
-                token,
-                ParseTableEntry {
+            state
+                .terminal_entries
+                .entry(token)
+                .or_insert(ParseTableEntry {
                     actions: vec![ParseAction::Reduce {
                         symbol: Symbol::non_reserved_keyword(),
                         child_count: 1,
@@ -318,8 +327,7 @@ fn populate_non_reserved_keyword_actions(
                         production_id: keyword_identifier_production_id,
                     }],
                     reusable: false,
-                },
-            );
+                });
         }
     }
 }

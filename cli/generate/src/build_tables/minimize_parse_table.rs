@@ -217,16 +217,26 @@ impl Minimizer<'_> {
                 ) {
                     return true;
                 }
-            } else if self.token_conflicts(left_state.id, right_state.id, right_state, *token) {
-                return true;
+            } else {
+                if self.token_conflicts(left_state.id, right_state.id, right_state, *token) {
+                    return true;
+                }
+                // if has_non_reserved_keyword_reductions(left_entry) {
+                //     return true;
+                // }
             }
         }
 
-        for token in right_state.terminal_entries.keys() {
-            if !left_state.terminal_entries.contains_key(token)
-                && self.token_conflicts(left_state.id, right_state.id, left_state, *token)
-            {
-                return true;
+        for (token, right_entry) in right_state.terminal_entries.iter() {
+            if left_state.terminal_entries.contains_key(token) {
+                // already compared entries
+            } else {
+                if self.token_conflicts(left_state.id, right_state.id, left_state, *token) {
+                    return true;
+                }
+                // if has_non_reserved_keyword_reductions(right_entry) {
+                //     return true;
+                // }
             }
         }
 
@@ -498,4 +508,14 @@ impl Minimizer<'_> {
             })
             .collect();
     }
+}
+
+fn has_non_reserved_keyword_reductions(entry: &ParseTableEntry) -> bool {
+    entry.actions.iter().any(|action| {
+        if let ParseAction::Reduce { symbol, .. } = action {
+            *symbol == Symbol::non_reserved_keyword()
+        } else {
+            false
+        }
+    })
 }

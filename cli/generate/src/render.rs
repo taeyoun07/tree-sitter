@@ -351,7 +351,7 @@ impl Generator {
             .symbols
             .iter()
             .filter(|symbol| {
-                if symbol.is_terminal() || symbol.is_eof() || symbol.is_non_reserved_keyword() {
+                if symbol.is_terminal() || symbol.is_eof() {
                     true
                 } else if symbol.is_external() {
                     self.syntax_grammar.external_tokens[symbol.index]
@@ -411,14 +411,9 @@ impl Generator {
         add_line!(self, "enum ts_symbol_identifiers {{");
         indent!(self);
         self.symbol_order.insert(Symbol::end(), 0);
-        let mut i = if self.syntax_grammar.word_token.is_some() {
-            self.symbol_order.insert(Symbol::non_reserved_keyword(), 1);
-            2
-        } else {
-            1
-        };
+        let mut i = 1;
         for symbol in &self.parse_table.symbols {
-            if *symbol != Symbol::end() && !symbol.is_non_reserved_keyword() {
+            if *symbol != Symbol::end() {
                 self.symbol_order.insert(*symbol, i);
                 add_line!(self, "{} = {i},", self.symbol_ids[symbol]);
                 i += 1;
@@ -1599,7 +1594,7 @@ impl Generator {
         if symbol == Symbol::end() {
             id = "ts_builtin_sym_end".to_string();
         } else if symbol.is_non_reserved_keyword() {
-            id = "ts_builtin_sym_non_reserved_keyword".to_string();
+            id = "aux_sym_non_reserved_keyword".to_string();
         } else {
             let (name, kind) = self.metadata_for_symbol(symbol);
             id = match kind {
@@ -1643,11 +1638,7 @@ impl Generator {
                 let token = &self.syntax_grammar.external_tokens[symbol.index];
                 (&token.name, token.kind)
             }
-            SymbolType::NonReservedKeyword => {
-                let variable =
-                    &self.lexical_grammar.variables[self.syntax_grammar.word_token.unwrap().index];
-                (&variable.name, variable.kind)
-            }
+            SymbolType::NonReservedKeyword => ("non_reserved_keyword", VariableType::Hidden),
         }
     }
 

@@ -846,14 +846,6 @@ static bool ts_parser__select_tree(TSParser *self, Subtree left, Subtree right) 
     return false;
   }
 
-  if (ts_subtree_has_non_reserved_keyword_token(right) && !ts_subtree_has_non_reserved_keyword_token(left)) {
-    LOG("select_with_keyword symbol:%s, over_symbol:%s", TREE_NAME(right), TREE_NAME(left));
-  }
-
-  if (ts_subtree_has_non_reserved_keyword_token(left) && !ts_subtree_has_non_reserved_keyword_token(right)) {
-    LOG("select_with_keyword symbol:%s, over_symbol:%s", TREE_NAME(left), TREE_NAME(right));
-  }
-
   if (ts_subtree_dynamic_precedence(right) > ts_subtree_dynamic_precedence(left)) {
     LOG("select_higher_precedence symbol:%s, prec:%" PRId32 ", over_symbol:%s, other_prec:%" PRId32,
         TREE_NAME(right), ts_subtree_dynamic_precedence(right), TREE_NAME(left),

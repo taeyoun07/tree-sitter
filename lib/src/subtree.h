@@ -139,7 +139,6 @@ typedef struct {
       int32_t dynamic_precedence;
       uint16_t repeat_depth;
       uint16_t production_id;
-      bool has_non_reserved_keyword_token;
       struct {
         TSSymbol symbol;
         TSStateId parse_state;
@@ -347,10 +346,6 @@ static inline uint16_t ts_subtree_production_id(Subtree self) {
   } else {
     return 0;
   }
-}
-
-static inline bool ts_subtree_has_non_reserved_keyword_token(Subtree self) {
-  return self.data.is_inline ? false : self.ptr->has_non_reserved_keyword_token;
 }
 
 static inline bool ts_subtree_fragile_left(Subtree self) {

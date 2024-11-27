@@ -436,7 +436,6 @@ void ts_subtree_summarize_children(
       }
     }
 
-    self.ptr->has_non_reserved_keyword_token = ts_subtree_has_non_reserved_keyword_token(child);
     self.ptr->dynamic_precedence += ts_subtree_dynamic_precedence(child);
     self.ptr->visible_descendant_count += ts_subtree_visible_descendant_count(child);
 
@@ -537,7 +536,6 @@ MutableSubtree ts_subtree_new_node(
       .visible_descendant_count = 0,
       .production_id = production_id,
       .first_leaf = {.symbol = 0, .parse_state = 0},
-      .has_non_reserved_keyword_token = language->keyword_capture_token && symbol == ts_builtin_sym_non_reserved_keyword,
     }}
   };
   MutableSubtree result = {.ptr = data};

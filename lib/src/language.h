@@ -81,9 +81,6 @@ static inline uint16_t ts_language_lookup(
 ) {
   // If this language has a keyword capture token (word token), then we replace the
   // builtin symbol for non reserved keywords with the keyword capture token.
-  if (self->keyword_capture_token && symbol == ts_builtin_sym_non_reserved_keyword) {
-    symbol = self->keyword_capture_token;
-  }
   if (state >= self->large_state_count) {
     uint32_t index = self->small_parse_table_map[state - self->large_state_count];
     const uint16_t *data = &self->small_parse_table[index];

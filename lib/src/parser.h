@@ -11,7 +11,6 @@ extern "C" {
 
 #define ts_builtin_sym_error                ((TSSymbol)-1)
 #define ts_builtin_sym_end                  0
-#define ts_builtin_sym_non_reserved_keyword 1
 
 #define TREE_SITTER_SERIALIZATION_BUFFER_SIZE 1024
 
