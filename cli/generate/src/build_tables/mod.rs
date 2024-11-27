@@ -293,7 +293,7 @@ fn populate_non_reserved_keyword_actions(
         return;
     }
 
-    parse_table.symbols.push(Symbol::non_reserved_identifier());
+    parse_table.symbols.push(Symbol::non_reserved_keyword());
 
     let keyword_identifier_production_id = parse_table.production_infos.len();
     let word_token_name = lexical_grammar.variables[word_token.index].name.clone();
@@ -312,7 +312,7 @@ fn populate_non_reserved_keyword_actions(
                 token,
                 ParseTableEntry {
                     actions: vec![ParseAction::Reduce {
-                        symbol: Symbol::non_reserved_identifier(),
+                        symbol: Symbol::non_reserved_keyword(),
                         child_count: 1,
                         dynamic_precedence: 0,
                         production_id: keyword_identifier_production_id,

@@ -1,3 +1,4 @@
+#include "parser.h"
 #include <time.h>
 #include <stdio.h>
 #include <limits.h>
@@ -843,6 +844,14 @@ static bool ts_parser__select_tree(TSParser *self, Subtree left, Subtree right) 
   if (ts_subtree_error_cost(left) < ts_subtree_error_cost(right)) {
     LOG("select_smaller_error symbol:%s, over_symbol:%s", TREE_NAME(left), TREE_NAME(right));
     return false;
+  }
+
+  if (ts_subtree_has_non_reserved_keyword_token(right) && !ts_subtree_has_non_reserved_keyword_token(left)) {
+    LOG("select_with_keyword symbol:%s, over_symbol:%s", TREE_NAME(right), TREE_NAME(left));
+  }
+
+  if (ts_subtree_has_non_reserved_keyword_token(left) && !ts_subtree_has_non_reserved_keyword_token(right)) {
+    LOG("select_with_keyword symbol:%s, over_symbol:%s", TREE_NAME(left), TREE_NAME(right));
   }
 
   if (ts_subtree_dynamic_precedence(right) > ts_subtree_dynamic_precedence(left)) {

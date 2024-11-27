@@ -11,7 +11,7 @@ pub enum SymbolType {
     EndOfNonTerminalExtra,
     Terminal,
     NonTerminal,
-    NonReservedIdentifier,
+    NonReservedKeyword,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -85,7 +85,7 @@ pub struct TokenSet {
     external_bits: SmallBitVec,
     eof: bool,
     end_of_nonterminal_extra: bool,
-    non_reserved_identifier: bool,
+    non_reserved_keyword: bool,
 }
 
 impl fmt::Debug for TokenSet {
@@ -111,10 +111,7 @@ impl Ord for TokenSet {
                 self.end_of_nonterminal_extra
                     .cmp(&other.end_of_nonterminal_extra)
             })
-            .then_with(|| {
-                self.non_reserved_identifier
-                    .cmp(&other.non_reserved_identifier)
-            })
+            .then_with(|| self.non_reserved_keyword.cmp(&other.non_reserved_keyword))
     }
 }
 
@@ -262,8 +259,8 @@ impl Symbol {
     }
 
     #[must_use]
-    pub fn is_non_reserved_identifier(&self) -> bool {
-        self.kind == SymbolType::NonReservedIdentifier
+    pub fn is_non_reserved_keyword(&self) -> bool {
+        self.kind == SymbolType::NonReservedKeyword
     }
 
     #[must_use]
@@ -285,9 +282,9 @@ impl Symbol {
     }
 
     #[must_use]
-    pub const fn non_reserved_identifier() -> Self {
+    pub const fn non_reserved_keyword() -> Self {
         Self {
-            kind: SymbolType::NonReservedIdentifier,
+            kind: SymbolType::NonReservedKeyword,
             index: 0,
         }
     }
@@ -340,7 +337,7 @@ impl TokenSet {
             external_bits: SmallBitVec::new(),
             eof: false,
             end_of_nonterminal_extra: false,
-            non_reserved_identifier: false,
+            non_reserved_keyword: false,
         }
     }
 
@@ -373,8 +370,8 @@ impl TokenSet {
             } else {
                 None
             })
-            .chain(if self.non_reserved_identifier {
-                Some(Symbol::non_reserved_identifier())
+            .chain(if self.non_reserved_keyword {
+                Some(Symbol::non_reserved_keyword())
             } else {
                 None
             })
@@ -400,7 +397,7 @@ impl TokenSet {
             SymbolType::External => self.external_bits.get(symbol.index).unwrap_or(false),
             SymbolType::End => self.eof,
             SymbolType::EndOfNonTerminalExtra => self.end_of_nonterminal_extra,
-            SymbolType::NonReservedIdentifier => self.non_reserved_identifier,
+            SymbolType::NonReservedKeyword => self.non_reserved_keyword,
         }
     }
 
@@ -421,8 +418,8 @@ impl TokenSet {
                 self.end_of_nonterminal_extra = true;
                 return;
             }
-            SymbolType::NonReservedIdentifier => {
-                self.non_reserved_identifier = true;
+            SymbolType::NonReservedKeyword => {
+                self.non_reserved_keyword = true;
                 return;
             }
         };
@@ -453,9 +450,9 @@ impl TokenSet {
                     false
                 };
             }
-            SymbolType::NonReservedIdentifier => {
-                return if self.non_reserved_identifier {
-                    self.non_reserved_identifier = false;
+            SymbolType::NonReservedKeyword => {
+                return if self.non_reserved_keyword {
+                    self.non_reserved_keyword = false;
                     true
                 } else {
                     false
@@ -475,7 +472,7 @@ impl TokenSet {
     pub fn is_empty(&self) -> bool {
         !self.eof
             && !self.end_of_nonterminal_extra
-            && !self.non_reserved_identifier
+            && !self.non_reserved_keyword
             && !self.terminal_bits.iter().any(|a| a)
             && !self.external_bits.iter().any(|a| a)
     }
@@ -483,7 +480,7 @@ impl TokenSet {
     pub fn len(&self) -> usize {
         self.eof as usize
             + self.end_of_nonterminal_extra as usize
-            + self.non_reserved_identifier as usize
+            + self.non_reserved_keyword as usize
             + self.terminal_bits.iter().filter(|b| *b).count()
             + self.external_bits.iter().filter(|b| *b).count()
     }
@@ -526,9 +523,9 @@ impl TokenSet {
             result |= !self.end_of_nonterminal_extra;
             self.end_of_nonterminal_extra = true;
         }
-        if other.non_reserved_identifier {
-            result |= !self.non_reserved_identifier;
-            self.non_reserved_identifier = true;
+        if other.non_reserved_keyword {
+            result |= !self.non_reserved_keyword;
+            self.non_reserved_keyword = true;
         }
         result |= self.insert_all_terminals(other);
         result |= self.insert_all_externals(other);

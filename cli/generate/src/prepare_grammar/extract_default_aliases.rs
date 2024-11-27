@@ -39,7 +39,7 @@ pub(super) fn extract_default_aliases(
                     SymbolType::Terminal => &mut terminal_status_list[step.symbol.index],
                     SymbolType::End
                     | SymbolType::EndOfNonTerminalExtra
-                    | SymbolType::NonReservedIdentifier => {
+                    | SymbolType::NonReservedKeyword => {
                         panic!("Unexpected end token")
                     }
                 };
@@ -71,9 +71,7 @@ pub(super) fn extract_default_aliases(
             SymbolType::External => &mut external_status_list[symbol.index],
             SymbolType::NonTerminal => &mut non_terminal_status_list[symbol.index],
             SymbolType::Terminal => &mut terminal_status_list[symbol.index],
-            SymbolType::End
-            | SymbolType::EndOfNonTerminalExtra
-            | SymbolType::NonReservedIdentifier => {
+            SymbolType::End | SymbolType::EndOfNonTerminalExtra | SymbolType::NonReservedKeyword => {
                 panic!("Unexpected end token")
             }
         };
@@ -131,7 +129,7 @@ pub(super) fn extract_default_aliases(
                     SymbolType::Terminal => &mut terminal_status_list[step.symbol.index],
                     SymbolType::End
                     | SymbolType::EndOfNonTerminalExtra
-                    | SymbolType::NonReservedIdentifier => {
+                    | SymbolType::NonReservedKeyword => {
                         panic!("Unexpected end token")
                     }
                 };

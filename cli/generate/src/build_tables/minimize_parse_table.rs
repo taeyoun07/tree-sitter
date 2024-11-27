@@ -349,7 +349,12 @@ impl Minimizer<'_> {
         new_token: Symbol,
     ) -> bool {
         if new_token == Symbol::end_of_nonterminal_extra() {
-            info!("split states {left_id} {right_id} - end of non-terminal extra",);
+            info!("split states {left_id} {right_id} - end of non-terminal extra");
+            return true;
+        }
+
+        if new_token == Symbol::non_reserved_keyword() {
+            println!("split states {left_id} {right_id} - non-reserved identifier");
             return true;
         }
 
@@ -420,6 +425,8 @@ impl Minimizer<'_> {
             &self.syntax_grammar.variables[symbol.index].name
         } else if symbol.is_external() {
             &self.syntax_grammar.external_tokens[symbol.index].name
+        } else if symbol.is_non_reserved_keyword() {
+            &self.lexical_grammar.variables[self.syntax_grammar.word_token.unwrap().index].name
         } else {
             &self.lexical_grammar.variables[symbol.index].name
         }
