@@ -59,7 +59,7 @@ pub struct FieldLocation {
     pub inherited: bool,
 }
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct ProductionInfo {
     pub alias_sequence: Vec<Option<Alias>>,
     pub field_map: BTreeMap<String, Vec<FieldLocation>>,
@@ -150,7 +150,7 @@ impl ParseState {
             }
         }
         for (symbol, action_index, new_state) in updates {
-            if symbol.is_non_terminal() {
+            if symbol.is_non_terminal() || symbol.is_non_reserved_keyword() {
                 self.nonterminal_entries
                     .insert(symbol, GotoAction::Goto(new_state));
             } else {

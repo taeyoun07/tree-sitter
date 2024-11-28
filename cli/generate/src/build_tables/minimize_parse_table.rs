@@ -221,22 +221,22 @@ impl Minimizer<'_> {
                 if self.token_conflicts(left_state.id, right_state.id, right_state, *token) {
                     return true;
                 }
-                // if has_non_reserved_keyword_reductions(left_entry) {
-                //     return true;
-                // }
+                if has_non_reserved_keyword_reductions(left_entry) {
+                    return true;
+                }
             }
         }
 
-        for (token, right_entry) in right_state.terminal_entries.iter() {
+        for (token, right_entry) in &right_state.terminal_entries {
             if left_state.terminal_entries.contains_key(token) {
                 // already compared entries
             } else {
                 if self.token_conflicts(left_state.id, right_state.id, left_state, *token) {
                     return true;
                 }
-                // if has_non_reserved_keyword_reductions(right_entry) {
-                //     return true;
-                // }
+                if has_non_reserved_keyword_reductions(right_entry) {
+                    return true;
+                }
             }
         }
 

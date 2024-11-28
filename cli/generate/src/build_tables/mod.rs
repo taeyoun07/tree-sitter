@@ -24,8 +24,11 @@ use crate::{
     grammars::{InlinedProductionMap, LexicalGrammar, SyntaxGrammar},
     nfa::{CharacterSet, NfaCursor},
     node_types::VariableInfo,
-    rules::{AliasMap, Symbol, SymbolType, TokenSet},
-    tables::{LexTable, ParseAction, ParseStateId, ParseTable, ParseTableEntry, ProductionInfo},
+    rules::{Alias, AliasMap, Symbol, SymbolType, TokenSet},
+    tables::{
+        GotoAction, LexTable, ParseAction, ParseStateId, ParseTable, ParseTableEntry,
+        ProductionInfo,
+    },
 };
 
 pub struct Tables {
@@ -76,7 +79,6 @@ pub fn build_tables(
         lexical_grammar,
         &keywords,
     );
-
     minimize_parse_table(
         &mut parse_table,
         syntax_grammar,
@@ -276,18 +278,13 @@ fn populate_non_reserved_keyword_actions(
                 continue;
             };
 
-            if keyword_successor_state_id == 1031 {
-                eprintln!(
-                    "doing non-reserved keyword for {}, from state {}",
-                    lexical_grammar.variables[token.index].name, state_id
-                );
-            }
-
             let word_token_successor_state = &parse_table.states[word_token_successor_state_id];
             let keyword_successor_state = &parse_table.states[keyword_successor_state_id];
 
             for token in word_token_successor_state.terminal_entries.keys() {
-                if !keyword_successor_state.terminal_entries.contains_key(token) {
+                if !keyword_successor_state.terminal_entries.contains_key(token)
+                    && !token.is_external()
+                {
                     lookaheads_to_populate
                         .entry(keyword_successor_state_id)
                         .or_default()
@@ -301,33 +298,53 @@ fn populate_non_reserved_keyword_actions(
         return;
     }
 
-    parse_table.symbols.push(Symbol::non_reserved_keyword());
+    let non_reserved_keyword_symbol = Symbol::non_reserved_keyword();
+    parse_table.symbols.push(non_reserved_keyword_symbol);
 
-    let keyword_identifier_production_id = parse_table.production_infos.len();
+    let production_id = parse_table.production_infos.len();
     let word_token_name = lexical_grammar.variables[word_token.index].name.clone();
     parse_table.production_infos.push(ProductionInfo {
-        alias_sequence: vec![Some(crate::rules::Alias {
+        alias_sequence: vec![Some(Alias {
             value: word_token_name,
             is_named: true,
         })],
         field_map: BTreeMap::default(),
     });
 
-    for (state_id, tokens) in lookaheads_to_populate {
+    let mut gotos_to_populate = Vec::new();
+    for (state_id, state) in parse_table.states.iter().enumerate() {
+        if let Some(word_entry) = state.terminal_entries.get(&word_token) {
+            if let Some(ParseAction::Shift {
+                state: next_state, ..
+            }) = word_entry.actions.last()
+            {
+                gotos_to_populate.push((state_id, *next_state));
+            }
+        }
+    }
+
+    for (state_id, next_state) in gotos_to_populate {
         let state = &mut parse_table.states[state_id];
+        state
+            .nonterminal_entries
+            .insert(non_reserved_keyword_symbol, GotoAction::Goto(next_state));
+    }
+
+    for (state_id, tokens) in lookaheads_to_populate {
         for token in tokens.iter() {
-            state
-                .terminal_entries
-                .entry(token)
-                .or_insert(ParseTableEntry {
+            let state = &mut parse_table.states[state_id];
+            state.terminal_entries.insert(
+                token,
+                ParseTableEntry {
+                    reusable: false,
                     actions: vec![ParseAction::Reduce {
                         symbol: Symbol::non_reserved_keyword(),
                         child_count: 1,
                         dynamic_precedence: 0,
-                        production_id: keyword_identifier_production_id,
+                        production_id,
                     }],
-                    reusable: false,
-                });
+                },
+            );
         }
     }
 }
